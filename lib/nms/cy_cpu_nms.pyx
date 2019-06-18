@@ -26,14 +26,10 @@ def cy_cpu_nms(np.ndarray[np.float32_t, ndim=2] bboxes, np.float threshold):
 
     keep = []
     cdef int cur_indices
-    cdef np.ndarray[np.float32_t, ndim=1] x1_i
-    cdef np.ndarray[np.float32_t, ndim=1] y1_i
-    cdef np.ndarray[np.float32_t, ndim=1] x2_i
-    cdef np.ndarray[np.float32_t, ndim=1] y2_i
-
-    cdef np.ndarray[np.float32_t, ndim=1] w
-    cdef np.ndarray[np.float32_t, ndim=1] h
-    cdef np.ndarray[np.float32_t, ndim=1] inter, union, iou, keep_indices
+    cdef np.ndarray[np.float32_t, ndim=1] x1_i, y1_i, x2_i, y2_i
+    cdef np.ndarray[np.float32_t, ndim=1] w, h
+    cdef np.ndarray[np.float32_t, ndim=1] inter, union, iou
+    cdef np.ndarray[np.int_t, ndim=1] keep_indices
 
     while des_indices.size > 0:
         cur_indices = des_indices[0]
