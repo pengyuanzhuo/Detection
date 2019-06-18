@@ -2,7 +2,7 @@ import numpy as np
 cimport numpy as np
 import cython
 
-"""
+
 def cy_cpu_nms(np.ndarray[np.float32_t, ndim=2] bboxes, np.float threshold):
     '''
     cython cpu nms
@@ -56,4 +56,3 @@ def cy_cpu_nms(np.ndarray[np.float32_t, ndim=2] bboxes, np.float threshold):
         des_indices = des_indices[keep_indices + 1]
 
     return keep
-"""
