@@ -1,5 +1,5 @@
 import numpy as np
-
+import torch
 
 def box_area(bboxes):
     '''
@@ -43,6 +43,25 @@ def box_iou(bboxes1, bboxes2):
     return inter / union
 
 
+def encode(anchors, gts, variance=[1.0, 1.0]):
+    '''
+    Encode the transforms from the priorbox layers into the ground truth boxes
+    Args:
+        anchors: shape=(N, 4), vstack of [x, y, w, h]
+        gts: shape=(N, 4), vstack of [xmin, ymin, xmax, ymax]
+        variance: list, len=4. SSD tricks. [1.0, 1.0] to turn off
+
+    Return:
+        t: vstack of [tx, ty, tw, th]
+    '''
+    txy = ((gts[:, :2] + gts[:, 2:]) / 2 - anchors[:, :2]) / anchors[:, 2:] # shape=(N, 2)
+    txy /= variance[0]
+    twh = np.log((gts[:, 2:] - gts[:, :2]) / anchors[:, 2:])
+    twh /= variance[1]
+
+    return np.hstack((txy, twh))
+
+
 if __name__ == "__main__":
     bboxes1 = np.array([[0, 0, 60, 60],
                        [3, 3, 45, 50]], dtype=np.float32)
@@ -51,4 +70,14 @@ if __name__ == "__main__":
                         [32, 12, 50, 80]], dtype=np.float32)
     # bboxes1 = torch.from_numpy(bboxes1)
     # bboxes2 = torch.from_numpy(bboxes2)
-    print(box_iou(bboxes1, bboxes2))
+    print('iou => \n', box_iou(bboxes1, bboxes2))
+
+    anchors = np.array([[10, 10, 25, 25],
+                        [22, 12, 100, 100],
+                        [32, 12, 50, 80]], dtype=np.float32)
+    gts = np.array([[11, 11, 23, 25],
+                    [22, 13, 101, 102],
+                    [32, 12, 50, 80]], dtype=np.float32)
+    # anchors = torch.from_numpy(anchors)
+    # gts = torch.from_numpy(gts)
+    print('encode => \n', encode(anchors, gts))
