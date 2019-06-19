@@ -1,3 +1,5 @@
+# coding: utf-8
+
 from bbox_utils import box_iou, encode, decode, xywh_to_xyxy
 import numpy as np
 
@@ -27,7 +29,12 @@ def match(anchors, gts, threshold=0.5, variances=[1.0, 1.0]):
     best_gt_ids = np.argmax(iou_mat, axis=0) # shape=(n_anchors,) 为每一个anchor找到最匹配的gt index
     best_gt_iou = iou_mat[best_gt_ids, np.arange(n_anchors)]
 
-    
+    # 对于已经被gt匹配的anchor, 其对应的gt显然应该由step1指定
+    for i in range(best_anchor_ids.shape[0]):
+        # 其中 i 是gt的index
+        best_gt_ids[best_anchor_ids[i]] = i
+
+    # 还要保证与gt匹配的anchor的iou足够高, 不被设为负样本
 
 
 
