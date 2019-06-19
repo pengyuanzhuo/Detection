@@ -1,6 +1,33 @@
 import numpy as np
 import torch
 
+
+def xyxy_to_xywh(bboxes):
+    '''
+    convert [xmin, ymin, xmax, ymax] bboxes to [x, y, w, h]
+    Args:
+        bboxes: shape=(N, 4)
+            vstack of [xmin, ymin, xmax, ymax]
+    '''
+    xy_c = (bboxes[:, :2] + bboxes[:, 2:]) / 2 # shape=(N, 2)
+    wh = (bboxes[:, 2:] - bboxes[:, :2])
+
+    return np.hstack((xy_c, wh))
+
+
+def xywh_to_xyxy(bboxes):
+    '''
+    convert [x, y, w, h] => [xmin, ymin, xmax, ymax]
+    Args:
+        bboxes: shape=(N, 4)
+            vstack of [x_c, y_c, w, h]
+    '''
+    xy_min = bboxes[:, :2] - bboxes[:, 2:] / 2
+    xy_max = bboxes[:, :2] + bboxes[:, 2:] / 2
+
+    return np.hstack((xy_min, xy_max)) 
+
+
 def box_area(bboxes):
     '''
     Computes the area of a set of bounding boxes.
@@ -10,8 +37,8 @@ def box_area(bboxes):
     Return:
         areas: shape=(N,)
     '''
-    w = bboxes[:, 2] - bboxes[:, 0] + 0
-    h = bboxes[:, 3] - bboxes[:, 1] + 0
+    w = bboxes[:, 2] - bboxes[:, 0] + 1
+    h = bboxes[:, 3] - bboxes[:, 1] + 1
     return w * h
 
 
@@ -49,7 +76,7 @@ def encode(anchors, gts, variance=[1.0, 1.0]):
     Args:
         anchors: shape=(N, 4), vstack of [x, y, w, h]
         gts: shape=(N, 4), vstack of [xmin, ymin, xmax, ymax]
-        variance: list, len=4. SSD tricks. [1.0, 1.0] to turn off
+        variance: list, len=2. SSD tricks. [1.0, 1.0] to turn off
 
     Return:
         t: vstack of [tx, ty, tw, th]
@@ -59,7 +86,25 @@ def encode(anchors, gts, variance=[1.0, 1.0]):
     twh = np.log((gts[:, 2:] - gts[:, :2]) / anchors[:, 2:])
     twh /= variance[1]
 
-    return np.hstack((txy, twh))
+    return np.hstack((txy, twh)) # (N, 4)
+
+
+def decode(anchors, loc, variance=[1.0, 1.0]):
+    '''
+    decode the offset to bbox
+    Args:
+        anchors: shape=(N, 4), vstack of [x, y, w, h]
+        loc: shape=(N, 4), vstack of [tx, ty, tw, th]
+        variance: list, len=2. SSD trick. [1.0, 1.0] to turn off
+
+    Return:
+        bboxes: shape=(N, 4), vstack of [xmin, ymin, xmax, ymax]
+    '''
+    bboxes_xy = anchors[:, :2] + anchors[:, 2:] * loc[:, :2] * variance[0]
+    bboxes_wh = anchors[:, 2:] * np.exp(loc[:, 2:] * variance[1])
+    bboxes = np.hstack((bboxes_xy, bboxes_wh))
+
+    return xywh_to_xyxy(bboxes)
 
 
 if __name__ == "__main__":
@@ -68,6 +113,9 @@ if __name__ == "__main__":
     bboxes2 = np.array([[10, 10, 25, 25],
                         [22, 12, 100, 100],
                         [32, 12, 50, 80]], dtype=np.float32)
+    bboxes1_xywh = xyxy_to_xywh(bboxes1)
+    print('xywh => \n', bboxes1_xywh)
+    print('xyxy => \n', xywh_to_xyxy(bboxes1_xywh))
     # bboxes1 = torch.from_numpy(bboxes1)
     # bboxes2 = torch.from_numpy(bboxes2)
     print('iou => \n', box_iou(bboxes1, bboxes2))
@@ -81,3 +129,4 @@ if __name__ == "__main__":
     # anchors = torch.from_numpy(anchors)
     # gts = torch.from_numpy(gts)
     print('encode => \n', encode(anchors, gts))
+    print('decode => \n', decode(anchors, encode(anchors, gts)))
