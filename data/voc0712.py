@@ -50,7 +50,7 @@ class VOCDetection(data.Dataset):
             subdir = os.path.join(self.root, 'VOC' + year)
             ann_dir = os.path.join(subdir, 'Annotation')
             img_dir = os.path.join(subdir, 'JPEGImages')
-            for line in open(os.path.join(subdir, 'ImageSets', 'Main', name + '.txt')):
+            for line in open(os.path.join(subdir, 'ImageSets', 'Main', dataset + '.txt')):
                 self.image_list.append(os.path.join(img_dir, line.strip() + '.jpg'))
                 self.ann_list.append(os.path.join(ann_dir, line.strip() + '.txt'))
         self.keep_difficult = self.difficult
