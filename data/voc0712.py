@@ -44,7 +44,6 @@ class VOCDetection(data.Dataset):
         self.root = root
         self.image_set = image_set
         self.transform = transform
-        self.target_transform = target_transform
         self.image_list = []
         self.ann_list = []
         for year, dataset in image_set:
