@@ -85,10 +85,10 @@ class VOCDetection(data.Dataset):
             classname = obj.find('name').text.lower().strip()
             classlabel = self.class_index_dict[classname]
             bndbox = obj.find('bndbox')
-            xmin = int(bndbox.find('xmin').text)
-            ymin = int(bndbox.find('ymin').text)
-            xmax = int(bndbox.find('xmax').text)
-            ymax = int(bndbox.find('xmax').text)
+            xmin = int(bndbox.find('xmin').text) - 1
+            ymin = int(bndbox.find('ymin').text) - 1
+            xmax = int(bndbox.find('xmax').text) - 1
+            ymax = int(bndbox.find('xmax').text) - 1
             target.append([xmin, ymin, xmax, ymax, classlabel])
         target = np.array(target, dtype=np.float32)
 
