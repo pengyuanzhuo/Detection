@@ -27,12 +27,20 @@ class VOCDetection(data.Dataset):
             [('2007', 'trainval'), ('2012', 'trainval')]
         transform (callable, optional): transformation to perform on the
             input image
-        target_transform (callable, optional): transformation to perform
-            on the target `annotation`
+        keep_difficult: bool, keep difficult object or not
+            default: False
     '''
     def __init__(self, root, image_set=[('2007', 'trainval'), ('2012', 'trainval')],
-                 transform=None, target_transform=None):
+                 transform=None, keep_difficult=False):
         super(data.Dataset, self).__init__()
+        self.classes = ('background',
+            'aeroplane', 'bicycle', 'bird', 'boat',
+            'bottle', 'bus', 'car', 'cat', 'chair',
+            'cow', 'diningtable', 'dog', 'horse',
+            'motorbike', 'person', 'pottedplant',
+            'sheep', 'sofa', 'train', 'tvmonitor'
+        )
+        self.class_index_dict = dict(zip(self.classes, range(len(self.classes))))
         self.root = root
         self.image_set = image_set
         self.transform = transform
@@ -46,14 +54,47 @@ class VOCDetection(data.Dataset):
             for line in open(os.path.join(subdir, 'ImageSets', 'Main', name + '.txt')):
                 self.image_list.append(os.path.join(img_dir, line.strip() + '.jpg'))
                 self.ann_list.append(os.path.join(ann_dir, line.strip() + '.txt'))
+        self.keep_difficult = self.difficult
 
     def __len__(self):
         return len(self.image_list)
 
     def __getitem__(self, index):
+        '''
+        return img, target
+        target: [[xmin, ymin, xmax, ymax, label],
+                 ...,
+                 ...]
+        '''
         # assert ann and img exist
         # TODO
 
         img = cv2.imread(self.image_list[index])
         h, w, c = img.shape
-        target = ET.parse(self.ann_list[index]).getroot()
+        img_info = {'h': h, 'w': w}
+        xmlroot = ET.parse(self.ann_list[index]).getroot()
+
+        target = []
+        for obj in xmlroot.findall('object'):
+            difficult = int(obj.find('difficult').text) == 1
+            if difficult and (not keep_difficult):
+                continue
+            classname = obj.find('name').text.lower().strip()
+            classlabel = self.class_index_dict[classname]
+            bndbox = obj.find('bndbox')
+            xmin = int(bndbox.find('mxin').text)
+            ymin = int(bndbox.find('ymin').text)
+            xmax = int(bndbox.find('xmax').text)
+            ymax = int(bndbox.find('xmax').text)
+            target.append([xmin, ymin, xmax, ymax, classlabel])
+
+        return img, target, img_info
+
+
+if __name__ == '__main__':
+    vocdataset = VOCDetection('/workspace/dataset/VOCdevkit')
+    for img, target, img_info in vocdataset:
+        print(img.shape)
+        print(target)
+        print(img_info)
+        break
