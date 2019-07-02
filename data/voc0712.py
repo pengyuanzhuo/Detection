@@ -48,12 +48,12 @@ class VOCDetection(data.Dataset):
         self.ann_list = []
         for year, dataset in image_set:
             subdir = os.path.join(self.root, 'VOC' + year)
-            ann_dir = os.path.join(subdir, 'Annotation')
+            ann_dir = os.path.join(subdir, 'Annotations')
             img_dir = os.path.join(subdir, 'JPEGImages')
             for line in open(os.path.join(subdir, 'ImageSets', 'Main', dataset + '.txt')):
                 self.image_list.append(os.path.join(img_dir, line.strip() + '.jpg'))
-                self.ann_list.append(os.path.join(ann_dir, line.strip() + '.txt'))
-        self.keep_difficult = self.difficult
+                self.ann_list.append(os.path.join(ann_dir, line.strip() + '.xml'))
+        self.keep_difficult = keep_difficult
 
     def __len__(self):
         return len(self.image_list)
@@ -76,12 +76,12 @@ class VOCDetection(data.Dataset):
         target = []
         for obj in xmlroot.findall('object'):
             difficult = int(obj.find('difficult').text) == 1
-            if difficult and (not keep_difficult):
+            if difficult and (not self.keep_difficult):
                 continue
             classname = obj.find('name').text.lower().strip()
             classlabel = self.class_index_dict[classname]
             bndbox = obj.find('bndbox')
-            xmin = int(bndbox.find('mxin').text)
+            xmin = int(bndbox.find('xmin').text)
             ymin = int(bndbox.find('ymin').text)
             xmax = int(bndbox.find('xmax').text)
             ymax = int(bndbox.find('xmax').text)
