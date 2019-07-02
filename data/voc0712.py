@@ -92,7 +92,8 @@ class VOCDetection(data.Dataset):
 
 if __name__ == '__main__':
     vocdataset = VOCDetection('/workspace/dataset/VOCdevkit')
-    for img, target, img_info in vocdataset:
+    vocloader = data.DataLoader(vocdataset, batch_size=32, shuffle=True)
+    for img, target, img_info in vocloader:
         print(img.shape)
         print(target)
         print(img_info)
