@@ -16,8 +16,9 @@ if sys.version_info[0] == 2:
 else:
     import xml.etree.ElementTree as ET
 
-import augmentations as aug
-import collate
+import data.augmentations as aug
+import data.collate as collate
+
 
 class VOCDetection(data.Dataset):
     '''
@@ -89,22 +90,11 @@ class VOCDetection(data.Dataset):
             xmax = int(bndbox.find('xmax').text)
             ymax = int(bndbox.find('xmax').text)
             target.append([xmin, ymin, xmax, ymax, classlabel])
-        target = np.array(target)
+        target = np.array(target, dtype=np.float32)
 
         if self.transform:
             img, bbox, label = self.transform(img, target[:, :4], target[:, 4:])
             target = np.hstack((bbox, label))
             img = img.transpose((2, 0, 1))
-        print('img => ', img.shape)
-        print('target => ', target.shape)
+
         return img, target
-
-
-if __name__ == '__main__':
-    transform = aug.Resize(300)
-    vocdataset = VOCDetection('/workspace/dataset/VOCdevkit', transform=transform)
-    vocloader = data.DataLoader(vocdataset, batch_size=4, shuffle=True, collate_fn=collate.detection_collate)
-    for img, target in vocloader:
-        print(img.shape)
-        print(target)
-        break
