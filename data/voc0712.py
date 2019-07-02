@@ -16,6 +16,8 @@ if sys.version_info[0] == 2:
 else:
     import xml.etree.ElementTree as ET
 
+import data.augmentations as aug
+
 
 class VOCDetection(data.Dataset):
     '''
@@ -70,6 +72,7 @@ class VOCDetection(data.Dataset):
 
         img = cv2.imread(self.image_list[index])
         h, w, c = img.shape
+        img = img[:, :, ::-1]
         img_info = {'h': h, 'w': w}
         xmlroot = ET.parse(self.ann_list[index]).getroot()
 
@@ -86,12 +89,18 @@ class VOCDetection(data.Dataset):
             xmax = int(bndbox.find('xmax').text)
             ymax = int(bndbox.find('xmax').text)
             target.append([xmin, ymin, xmax, ymax, classlabel])
+        target = np.array(target)
+
+        if self.transform:
+            img, bbox, label = self.transform(img, target[:, :4], target[:, 4:])
+            target = np.hstack((bbox, label[:, None]))
 
         return img, target, img_info
 
 
 if __name__ == '__main__':
-    vocdataset = VOCDetection('/workspace/dataset/VOCdevkit')
+    transform = aug.Resize(300)
+    vocdataset = VOCDetection('/workspace/dataset/VOCdevkit', transform=transform)
     vocloader = data.DataLoader(vocdataset, batch_size=32, shuffle=True)
     for img, target, img_info in vocloader:
         print(img.shape)
