@@ -25,7 +25,7 @@ def xywh_to_xyxy(bboxes):
     xy_min = bboxes[:, :2] - bboxes[:, 2:] / 2
     xy_max = bboxes[:, :2] + bboxes[:, 2:] / 2
 
-    return np.hstack((xy_min, xy_max)) 
+    return np.hstack((xy_min, xy_max))
 
 
 def box_area(bboxes):
