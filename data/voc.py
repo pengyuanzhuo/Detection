@@ -77,7 +77,7 @@ class VOCDetection(data.Dataset):
         img = cv2.imread(self.image_list[index])
         h, w, c = img.shape
         img = img[:, :, ::-1]
-        img_info = {'h': h, 'w': w}
+
         xmlroot = ET.parse(self.ann_list[index]).getroot()
 
         target = []
@@ -91,7 +91,7 @@ class VOCDetection(data.Dataset):
             xmin = int(bndbox.find('xmin').text) - 1
             ymin = int(bndbox.find('ymin').text) - 1
             xmax = int(bndbox.find('xmax').text) - 1
-            ymax = int(bndbox.find('xmax').text) - 1
+            ymax = int(bndbox.find('ymax').text) - 1
             if self.do_norm:
                 xmin /= w
                 xmax /= w
@@ -103,6 +103,7 @@ class VOCDetection(data.Dataset):
         if self.transform:
             img, bbox, label = self.transform(img, target[:, :4], target[:, 4:])
             target = np.hstack((bbox, label))
-            img = img.transpose((2, 0, 1))
+
+        img = np.ascontiguousarray(img.transpose((2, 0, 1)))
 
         return img, target
