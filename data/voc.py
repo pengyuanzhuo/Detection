@@ -32,9 +32,11 @@ class VOCDetection(data.Dataset):
             input image
         keep_difficult: bool, keep difficult object or not
             default: False
+        do_norm: bool, bbox / (w, h) or not
+            default: True
     '''
     def __init__(self, root, image_set=[('2007', 'trainval'), ('2012', 'trainval')],
-                 transform=None, keep_difficult=False):
+                 transform=None, keep_difficult=False, do_norm=True):
         super(data.Dataset, self).__init__()
         self.classes = ('background',
             'aeroplane', 'bicycle', 'bird', 'boat',
@@ -57,6 +59,7 @@ class VOCDetection(data.Dataset):
                 self.image_list.append(os.path.join(img_dir, line.strip() + '.jpg'))
                 self.ann_list.append(os.path.join(ann_dir, line.strip() + '.xml'))
         self.keep_difficult = keep_difficult
+        self.do_norm = do_norm
 
     def __len__(self):
         return len(self.image_list)
@@ -89,6 +92,11 @@ class VOCDetection(data.Dataset):
             ymin = int(bndbox.find('ymin').text) - 1
             xmax = int(bndbox.find('xmax').text) - 1
             ymax = int(bndbox.find('xmax').text) - 1
+            if self.do_norm:
+                xmin /= w
+                xmax /= w
+                ymin /= h
+                ymax /= h
             target.append([xmin, ymin, xmax, ymax, classlabel])
         target = np.array(target, dtype=np.float32)
 
