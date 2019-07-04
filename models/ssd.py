@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from lib.proposal.default_box import DefaultBox
+
 
 base_cfg = {
     '300': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'C', 512, 512, 512, 'M',
@@ -89,13 +91,16 @@ def make_head(vgg, extras, num_classes=21):
 
 
 class SSD(nn.Module):
-    def __init__(self, base_net, extra_net, head, num_classes):
+    def __init__(self, base_net, extra_net, head, cfg):
         super(SSD, self).__init__()
         self.base = nn.ModuleList(base_net)
         self.extras = nn.ModuleList(extra_net)
         self.conf = nn.ModuleList(head[0])
         self.loc = nn.ModuleList(head[1])
-        self.num_classes = num_classes
+        self.num_classes = cfg.num_classes
+        self.default_box_fun = DefaultBox(cfg.input_size, cfg.feature_maps, 
+                                          cfg.ratios, cfg.min_scale, cfg.max_scale)
+        self.default_box = self.default_box_fun.forward()
 
     def forward(self, x):
         input_feature_map = []
@@ -129,18 +134,19 @@ class SSD(nn.Module):
             loc.append(loc_out)
 
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
-        print(loc.shape)
         loc = loc.view(loc.size(0), -1, 4)
-        print(loc.shape)
-        return loc, conf
+        conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
+        conf = conf.view(conf.size(0), -1, self.num_classes)
+
+        return self.default_box ,loc, conf
 
 
-def build_ssd(num_classes, size=300):
-    base = make_vgg(base_cfg[str(size)])
+def build_ssd(cfg):
+    base = make_vgg(base_cfg[str(cfg.input_size)])
     extras = make_extras()
-    head = make_head(base, extras, num_classes)
+    head = make_head(base, extras, cfg.num_classes)
 
-    return SSD(base, extras, head, num_classes)
+    return SSD(base, extras, head, cfg)
 
 
 if __name__ == '__main__':
