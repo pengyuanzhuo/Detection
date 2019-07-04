@@ -30,6 +30,11 @@ class DefaultBox(object):
         self.max_scale = max_scale
 
     def forward(self):
+        '''
+        return: 2d array, shape=(N, 4)
+            vstack of [cx, cy, scale_w, scale_h]
+            [cx, cy, scale_w, scale_h] * img_size => default box in img
+        '''
         scales = [0.1]
         m = len(self.feature_maps) - 1
         for k in range(1, m + 2):
