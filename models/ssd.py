@@ -103,6 +103,13 @@ class SSD(nn.Module):
         self.default_box = self.default_box_fun.forward()
 
     def forward(self, x):
+        '''
+        input: 4d tensor, b, c, h, w
+        output:
+            default_box: (N, 4), vstack of [cx, cy, scale_w, scale_h]
+            loc: (b, N, 4), b is batch index
+            conf: (b, N, n_classes)
+        '''
         input_feature_map = []
         loc= []
         conf = []
