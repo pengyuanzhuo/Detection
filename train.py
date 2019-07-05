@@ -2,7 +2,7 @@ import torch
 import torch.optim as optim
 
 from data import VOCDetection, detection_collate
-from data import Resize, Compose
+from data import Resize, Compose, ToTensor
 from models.ssd import build_ssd
 from config import Config as cfg
 
@@ -47,7 +47,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         if DEBUG:
             # show train sample for debug
             img, target = imgs[0], targets[0]
-            img = img.numpy().transpose((1, 2, 0)).copy()
+            img = img.numpy().transpose((1, 2, 0)).copy().astype(np.uint8)
             target = target.numpy()[:, :4]
             for box in target:
                 box *= args.input_size
@@ -69,7 +69,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
 
 def main(args):
-    train_transform = Compose([Resize(args.input_size)])
+    train_transform = Compose([Resize(args.input_size),
+                               ToTensor()])
     trainset = VOCDetection(args.data_root, args.train_set,
                             transform=train_transform,
                             do_norm=True)
