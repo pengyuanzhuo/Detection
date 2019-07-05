@@ -104,6 +104,4 @@ class VOCDetection(data.Dataset):
             img, bbox, label = self.transform(img, target[:, :4], target[:, 4:])
             target = np.hstack((bbox, label))
 
-        img = np.ascontiguousarray(img.transpose((2, 0, 1)))
-
         return img, target
