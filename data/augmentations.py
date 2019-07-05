@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 
 
 class Compose(object):
@@ -29,3 +30,13 @@ class Resize(object):
         image = cv2.resize(image, (self.size,
                                  self.size))
         return image, boxes, labels
+
+
+class ToTensor(object):
+    '''
+    convert cv2 image(h, w, c) to (c, h, w), dtype=np.float32
+    '''
+    def __call__(self, img, boxes=None, labels=None):
+        img = np.ascontiguousarray(img.transpose((2, 0, 1))).astype(np.float32)
+
+        return img, boxes, labels
