@@ -4,6 +4,7 @@ import torch.optim as optim
 from data import VOCDetection, detection_collate
 from data import Resize, Compose, ToTensor
 from models.ssd import build_ssd
+import lib.bbox as bbox
 from config import Config as cfg
 
 import matplotlib
@@ -43,12 +44,14 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
     tic = time.time()
     for imgs, targets in train_loader:
+        # imgs.shape = (b, 3, h, w)
+        # targets = [target, target, ...], len(targets) = b, target.shape = (n_obj, 5)
         data_time.update((time.time() - tic) * 1000)
         if DEBUG:
             # show train sample for debug
             img, target = imgs[0], targets[0]
             img = img.numpy().transpose((1, 2, 0)).copy().astype(np.uint8)
-            target = target.numpy()[:, :4]
+            target = target.numpy()[:, :4].copy()
             for box in target:
                 box *= args.input_size
                 cv2.rectangle(img,
@@ -59,12 +62,41 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             plt.imshow(img)
             plt.savefig('./demo.jpg', dpi=600)
 
+        # default_box, shape=(n_anchors, 4), vstack of [cx, cy, scale_w, scale_h]
+        # conf, shape=(b, n_anchors, n_classes)
+        # loc, shape=(b, n_anchors, 4)
         default_box, conf, loc = model(imgs)
+        n_anchors, _ = default_box.shape
 
         if DEBUG:
+            print('=> model output:')
             print('default box => ', default_box.shape)
             print('conf =>', conf.shape)
             print('loc =>', loc.shape)
+
+        batch_transform_target = np.zeros((args.batch_size, n_anchors, 4))
+        batch_conf_target = np.zeros((args.batch_size, n_anchors))
+        for i, target in enumerate(targets):
+            target = target.numpy() # torch.Tensor => numpy.
+            transform_target, conf_target = bbox.match(default_box, target, args.threshold, args.variances)
+            # transform_target.shape = (n_anchors, 4)
+            # conf_target.shape = (n_anchors,)
+            batch_transform_target[i] = transform_target
+            batch_conf_target[i] = conf_target
+
+        if DEBUG:
+            print('=> positive default_box: ')
+            pos_default_box = default_box[batch_conf_target[0] > 0]
+            img = imgs[0].numpy().transpose((1, 2, 0)).copy().astype(np.uint8)
+            for box in pos_default_box:
+                box *= args.input_size
+                cv2.rectangle(img,
+                    (int(box[0]), int(box[1])),
+                    (int(box[2]), int(box[3])),
+                    (0, 255, 0), thickness=1
+                )
+            plt.imshow(img)
+            plt.savefig('./sample.jpg', dpi=600)
             break
 
 
