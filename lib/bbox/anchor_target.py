@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from bbox_utils import box_iou, encode, decode, xywh_to_xyxy
+from lib.bbox.bbox_utils import box_iou, encode, decode, xywh_to_xyxy
 import numpy as np
 
 
@@ -40,9 +40,10 @@ def match(anchors, gts, threshold=0.5, variances=[1.0, 1.0]):
 
     # 还要保证与gt匹配的anchor的iou足够高, 不被设为负样本
     best_gt_iou[best_anchor_ids] = 2
+    print(best_gt_iou)
 
-    matches = gts_bbox[best_gt_iou] # 与anchors一一对应的gt box, shape=(N, 4)
-    conf_target = gts_label[best_gt_iou] # 与 anchors一一对应的gt label, shape=(N,)
+    matches = gts_bbox[best_gt_ids] # 与anchors一一对应的gt box, shape=(N, 4)
+    conf_target = gts_label[best_gt_ids] # 与 anchors一一对应的gt label, shape=(N,)
     conf_target[best_gt_iou < threshold] = 0
 
     transform_target = encode(anchors, matches, variances)
