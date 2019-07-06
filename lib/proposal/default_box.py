@@ -12,7 +12,7 @@ import cv2
 class DefaultBox(object):
     def __init__(self, input_size=300,
                  feature_maps=[38, 19, 10, 5, 3, 1],
-                 # feature_maps=[3, 1],
+                 # feature_maps=[3, 3, 1],
                  # ratios=[[2], [2]],
                  ratios = [[2], [3, 2], [3, 2], [3, 2], [2], [2]],
                  min_scale=0.2, max_scale=0.9):
@@ -37,10 +37,11 @@ class DefaultBox(object):
         '''
         scales = [0.1]
         m = len(self.feature_maps) - 1
-        for k in range(1, m + 2):
+        for k in range(1, m + 1):
             # m + 2 for aux scale
             scale_k = self.min_scale + (self.max_scale - self.min_scale) * (k - 1) / ((m - 1) + 1e-9)
             scales += [scale_k]
+        scales += [self.max_scale + 0.5 * (1 - self.max_scale)]
 
         default_box = []
         for i, fm_size in enumerate(self.feature_maps):
