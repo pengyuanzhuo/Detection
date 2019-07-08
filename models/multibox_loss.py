@@ -42,7 +42,18 @@ class MultiboxLoss(nn.Module):
         # Classification Loss
         batch_conf = conf.view(-1, self.n_classes) # (b*n_anchors, n_classes)
         loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_target.view(-1, 1)) # shape=(b*n_anchors, 1)
-        print(loss_c[pos].shape)
+        loss_c[pos.reshape((-1, 1))] = 0 # negative sample only
+        # sort by loss_c
+        batch_size = conf.size(0)
+        loss_c = loss_c.reshape(batch_size, -1) # shape=(b, n_anchors). 每一行表示一张图的anchor loss
+        # 每一张图片的anchor需要分别处理
+        # 两次排序, 生成的是每个元素的排位, 例如
+        # 原序列x = [0, 3, 1]
+        # x.sort 降序 => [1, 2, 0]
+        # 再排序 => [2, 0, 1]
+        # 原数组0排第2位, 原数组3排第0位, 原数组1排第1位 
+        _, loss_indices = loss_c.sort(dim=1, descending=True) # shape=(b, n_anchors)
+        _, loss_rank = loss_indices.sort(dim=1)
 
 
         return loss_loc

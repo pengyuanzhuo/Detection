@@ -11,6 +11,7 @@ class Config:
     max_scale = 0.9
     variances = [1.0, 1.0] # target transform trick in ssd
     threshold = 0.5 # default box match iou threshold
+    neg_pos_ratio = 3. # neg / pos default_box
 
     epochs = 1
     workers = 4
@@ -18,3 +19,4 @@ class Config:
     lr = 0.001
     weight_decay = 5e-4
     momentum = 0.9
+    gpus = '0' # gpus to use, '0,1,2,3'
