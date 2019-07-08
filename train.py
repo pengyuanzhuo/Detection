@@ -5,6 +5,7 @@ from data import VOCDetection, detection_collate
 from data import Resize, Compose, ToTensor
 from models.ssd import build_ssd
 import lib.bbox as bbox
+import models.multibox_loss as multibox_loss
 from config import Config as cfg
 
 import matplotlib
@@ -40,7 +41,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
     data_time = AverageMeter()
     batch_time = AverageMeter()
-    loss = AverageMeter()
+    losses = AverageMeter()
 
     tic = time.time()
     for imgs, targets in train_loader:
@@ -65,7 +66,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         # default_box, shape=(n_anchors, 4), vstack of [cx, cy, scale_w, scale_h]
         # conf, shape=(b, n_anchors, n_classes)
         # loc, shape=(b, n_anchors, 4)
-        default_box, conf, loc = model(imgs)
+        default_box, loc, conf = model(imgs)
         n_anchors, _ = default_box.shape
 
         if DEBUG:
@@ -74,14 +75,14 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             print('conf =>', conf.shape)
             print('loc =>', loc.shape)
 
-        batch_transform_target = np.zeros((args.batch_size, n_anchors, 4))
+        batch_loc_target = np.zeros((args.batch_size, n_anchors, 4))
         batch_conf_target = np.zeros((args.batch_size, n_anchors))
         for i, target in enumerate(targets):
             target = target.numpy() # torch.Tensor => numpy.
-            transform_target, conf_target, matches = bbox.match(default_box, target, args.threshold, args.variances)
-            # transform_target.shape = (n_anchors, 4)
+            loc_target, conf_target, matches = bbox.match(default_box, target, args.threshold, args.variances)
+            # loc_target.shape = (n_anchors, 4)
             # conf_target.shape = (n_anchors,)
-            batch_transform_target[i] = transform_target
+            batch_loc_target[i] = loc_target
             batch_conf_target[i] = conf_target
 
         if DEBUG:
@@ -105,7 +106,14 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
                 )
             plt.imshow(img)
             plt.savefig('./sample.jpg', dpi=600)
-            break
+
+        batch_loc_target = torch.from_numpy(batch_loc_target).float()
+        batch_conf_target = torch.from_numpy(batch_conf_target).long()
+        loss = criterion(loc, conf, batch_loc_target, batch_conf_target)
+        if DEBUG:
+            print('=> MultiboxLoss: ')
+            print('loc loss:', loss.shape)
+        break
 
 
 def main(args):
@@ -118,7 +126,7 @@ def main(args):
                                                num_workers=args.workers, collate_fn=detection_collate)
 
     model = build_ssd(cfg)
-    criterion = None
+    criterion = multibox_loss.MultiboxLoss(args.num_classes)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum,
                           weight_decay = args.weight_decay)
 
