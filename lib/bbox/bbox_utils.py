@@ -37,8 +37,8 @@ def box_area(bboxes):
     Return:
         areas: shape=(N,)
     '''
-    w = bboxes[:, 2] - bboxes[:, 0] + 1
-    h = bboxes[:, 3] - bboxes[:, 1] + 1
+    w = bboxes[:, 2] - bboxes[:, 0]
+    h = bboxes[:, 3] - bboxes[:, 1]
     return w * h
 
 
