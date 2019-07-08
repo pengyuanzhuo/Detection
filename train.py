@@ -78,7 +78,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         batch_conf_target = np.zeros((args.batch_size, n_anchors))
         for i, target in enumerate(targets):
             target = target.numpy() # torch.Tensor => numpy.
-            transform_target, conf_target = bbox.match(default_box, target, args.threshold, args.variances)
+            transform_target, conf_target, matches = bbox.match(default_box, target, args.threshold, args.variances)
             # transform_target.shape = (n_anchors, 4)
             # conf_target.shape = (n_anchors,)
             batch_transform_target[i] = transform_target
@@ -87,6 +87,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         if DEBUG:
             print('=> positive default_box: ')
             pos_default_box = default_box[batch_conf_target[0] > 0]
+            pos_default_box = bbox.xywh_to_xyxy(pos_default_box)
             img = imgs[0].numpy().transpose((1, 2, 0)).copy().astype(np.uint8)
             for box in pos_default_box:
                 box *= args.input_size
@@ -94,6 +95,13 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
                     (int(box[0]), int(box[1])),
                     (int(box[2]), int(box[3])),
                     (0, 255, 0), thickness=1
+                )
+            for box in matches[batch_conf_target[0] > 0]:
+                box *= args.input_size
+                cv2.rectangle(img,
+                    (int(box[0]), int(box[1])),
+                    (int(box[2]), int(box[3])),
+                    (255, 0, 0), thickness=1
                 )
             plt.imshow(img)
             plt.savefig('./sample.jpg', dpi=600)
