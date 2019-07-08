@@ -145,7 +145,7 @@ class SSD(nn.Module):
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
         conf = conf.view(conf.size(0), -1, self.num_classes)
 
-        return self.default_box ,loc, conf
+        return self.default_box, loc, conf
 
 
 def build_ssd(cfg):
