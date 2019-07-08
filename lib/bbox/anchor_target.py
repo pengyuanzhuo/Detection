@@ -17,6 +17,7 @@ def match(anchors, gts, threshold=0.5, variances=[1.0, 1.0]):
     Return:
         transform_target: shape=(N, 4)
         conf_target: shape=(N,)
+        matches: shape=(N, 4), gt: anchor <=> gt
     '''
     gts_bbox = gts[:, :4] # (K, 4)
     gts_label = gts[:, 4] # (K,)
@@ -48,7 +49,7 @@ def match(anchors, gts, threshold=0.5, variances=[1.0, 1.0]):
 
     transform_target = encode(anchors, matches, variances)
 
-    return transform_target, conf_target
+    return transform_target, conf_target, matches
 
 
 if __name__ == '__main__':
