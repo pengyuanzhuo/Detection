@@ -41,7 +41,6 @@ def match(anchors, gts, threshold=0.5, variances=[1.0, 1.0]):
 
     # 还要保证与gt匹配的anchor的iou足够高, 不被设为负样本
     best_gt_iou[best_anchor_ids] = 2
-    print(best_gt_iou)
 
     matches = gts_bbox[best_gt_ids] # 与anchors一一对应的gt box, shape=(N, 4)
     conf_target = gts_label[best_gt_ids] # 与 anchors一一对应的gt label, shape=(N,)
