@@ -16,7 +16,12 @@ class Config:
     epochs = 1
     workers = 4
     batch_size = 1
-    lr = 0.001
+    lr = 0.00001
+    lr_step = (80000, 100000, 120000) # lr * 0.1 for lr_step
     weight_decay = 5e-4
     momentum = 0.9
-    gpus = '0' # gpus to use, '0,1,2,3'
+    gpus = None # gpus to use, '0,1,2,3', None for cpu
+    pretrain = './weights/vgg16_reducedfc.pth' # backbone pretrain model. specifying checkpoint will override pretrain
+    checkpoint = None # if resume
+    checkpoint_dir = './checkpoints' # checkpoint dir
+    print_freq = 1 # every print_freq
