@@ -109,11 +109,13 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             batch_loc_target[j] = loc_target
             batch_conf_target[j] = conf_target
 
-        if DEBUG:
+        if not DEBUG:
             print('=> positive default_box: ')
             pos_default_box = default_box[batch_conf_target[0] > 0]
             pos_default_box = bbox.xywh_to_xyxy(pos_default_box)
-            img = imgs[0].numpy().transpose((1, 2, 0)).copy().astype(np.uint8)
+            img = imgs[0].numpy().transpose((1, 2, 0)).copy()
+            img += np.array([123, 117, 104])
+            img = img.astype(np.uint8)
             for box in pos_default_box:
                 box *= args.input_size
                 cv2.rectangle(img,
@@ -129,7 +131,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
                     (255, 0, 0), thickness=1
                 )
             plt.imshow(img)
-            plt.savefig('./sample.jpg', dpi=600)
+            plt.savefig('./samples/sample_{}.jpg'.format(i), dpi=600)
 
         batch_loc_target = torch.from_numpy(batch_loc_target).float()
         batch_conf_target = torch.from_numpy(batch_conf_target).long()
