@@ -46,7 +46,7 @@ class DefaultBox(object):
         default_box = []
         for i, fm_size in enumerate(self.feature_maps):
             a, b = np.meshgrid(np.arange(fm_size), np.arange(fm_size))
-            fm_xy = np.hstack((a.reshape((-1, 1)), b.reshape((-1, 1))))
+            fm_xy = np.hstack((b.reshape((-1, 1)), a.reshape((-1, 1))))
             # 遍历当前feature map的每一个cell, 计算default box的中心
             for x_i, y_i in fm_xy:
                 cx = (y_i + 0.5) / fm_size
