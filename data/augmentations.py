@@ -40,3 +40,17 @@ class ToTensor(object):
         img = np.ascontiguousarray(img.transpose((2, 0, 1))).astype(np.float32)
 
         return img, boxes, labels
+
+
+class Norm(object):
+    '''
+    - mean
+    '''
+    def __init__(self, mean=(123, 117, 104), std=None):
+        self.mean = np.array(mean, dtype=np.float32)
+        self.std = np.array(std, dtype=np.float32)
+
+    def __call__(self, img, boxes=None, labels=None):
+        img -= self.mean[:, None, None]
+
+        return img, boxes, labels
