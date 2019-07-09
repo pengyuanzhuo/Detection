@@ -147,6 +147,9 @@ class SSD(nn.Module):
 
         return self.default_box, loc, conf
 
+    def load_weight(self, pretrain):
+        self.base.load_state_dict(torch.load(pretrain))
+
 
 def build_ssd(cfg):
     base = make_vgg(base_cfg[str(cfg.input_size)])
