@@ -109,7 +109,7 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             batch_loc_target[j] = loc_target
             batch_conf_target[j] = conf_target
 
-        if not DEBUG:
+        if DEBUG:
             print('=> positive default_box: ')
             pos_default_box = default_box[batch_conf_target[0] > 0]
             pos_default_box = bbox.xywh_to_xyxy(pos_default_box)
