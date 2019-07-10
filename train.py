@@ -205,6 +205,17 @@ def main(args):
     for epoch in range(args.start_epoch, args.epochs):
         train(train_loader, model, criterion, optimizer, epoch, args)
 
+        state = {
+            'epoch': epoch + 1,
+            'model': model.state_dict(),
+            'optimizer': optimizer.state_dict()
+        }
+        # save checkpoint
+        os.makedirs(args.checkpoint_dir, exist_ok=True)
+        checkpoint_file = os.path.join(args.checkpoint_dir,
+                                       'checkpoint_epoch_{:04d}.pth.tar'.format(state['epoch']))
+        torch.save(state, checkpoint_file)
+
 
 if __name__ == '__main__':
     main(cfg)
