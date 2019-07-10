@@ -97,8 +97,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
             print('conf =>', conf.shape)
             print('loc =>', loc.shape)
 
-        batch_loc_target = np.zeros((args.batch_size, n_anchors, 4))
-        batch_conf_target = np.zeros((args.batch_size, n_anchors))
+        batch_loc_target = np.zeros((batch_size, n_anchors, 4))
+        batch_conf_target = np.zeros((batch_size, n_anchors))
         for j, target in enumerate(targets):
             target = target.numpy() # torch.Tensor => numpy.
             loc_target, conf_target, matches = bbox.match(default_box, target, args.threshold, args.variances)
