@@ -69,8 +69,6 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
         batch_size = imgs.size(0)
         if args.gpus:
             imgs = imgs.cuda(non_blocking=True)
-            targets = targets.cuda(non_blocking=True)
-
 
         if DEBUG:
             # show train sample for debug
@@ -135,6 +133,9 @@ def train(train_loader, model, criterion, optimizer, epoch, args):
 
         batch_loc_target = torch.from_numpy(batch_loc_target).float()
         batch_conf_target = torch.from_numpy(batch_conf_target).long()
+        if args.gpus:
+            batch_conf_target = batch_conf_target.cuda()
+            batch_loc_target = batch_loc_target.cuda()
         loss_conf, loss_loc, loss_merge = criterion(loc, conf, batch_loc_target, batch_conf_target)
         losses.update(loss_merge.item(), batch_size)
         losses_conf.update(loss_conf.item(), batch_size)
