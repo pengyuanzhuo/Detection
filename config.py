@@ -16,7 +16,7 @@ class Config:
     epochs = 1
     workers = 4
     batch_size = 1
-    lr = 0.00001
+    lr = 0.0001
     lr_step = (80000, 100000, 120000) # lr * 0.1 for lr_step
     weight_decay = 5e-4
     momentum = 0.9
@@ -25,3 +25,4 @@ class Config:
     checkpoint = None # if resume
     checkpoint_dir = './checkpoints' # checkpoint dir
     print_freq = 1 # every print_freq
+    save_freq = 5000 # save checkpoint
