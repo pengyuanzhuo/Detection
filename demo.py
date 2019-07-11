@@ -60,7 +60,7 @@ def main(args):
     image = cv2.imread(args.img)
     inputs = preprocess(image) # (1, c, h, w)
 
-    model = build_model(args.model, device)
+    model = build_model(args.model, device).to(device)
 
     with torch.no_grad():
         inputs = inputs.to(device)
