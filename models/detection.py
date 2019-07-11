@@ -21,7 +21,7 @@ def detection(default_box, conf, loc, conf_threshold=0.8, nms_threshold=0.2, top
     '''
     batch_size = conf.size(0)
     n_classes = conf.size(2)
-    n_anchors = default_box.size(0)
+    n_anchors = default_box.shape[0]
 
     output = torch.zeros(batch_size, n_classes, topk, 5)
     for i in range(batch_size):
