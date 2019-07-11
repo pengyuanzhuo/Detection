@@ -26,7 +26,7 @@ def detection(default_box, conf, loc, conf_threshold=0.8, nms_threshold=0.2, top
     output = torch.zeros(batch_size, n_classes, topk, 5)
     for i in range(batch_size):
         loc_i = loc[i] # shape=(n_anchors, 4)
-        decode_boxes = bbox_utils.decode(default_box, loc_i.numpy(), variance) # shape=(n_anchors, 4)
+        decode_boxes = bbox_utils.decode(default_box, loc_i.cpu().numpy(), variance) # shape=(n_anchors, 4)
 
         conf_i = conf[i] # shape=(n_anchors, n_classes), 第i张图的conf
         # 对每一类分别执行nms
