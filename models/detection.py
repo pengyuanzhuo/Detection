@@ -36,7 +36,7 @@ def detection(default_box, conf, loc, conf_threshold=0.8, nms_threshold=0.2, top
             conf_i_scores = conf_i_c[conf_i_c_mask] # shape=(n_score_greater_threshold,), > conf_threshold的score
             if conf_i_scores.size(0) == 0:
                 continue
-            decode_boxes_c = decode_boxes[conf_i_c_mask] # shape=(n_score_greter_threshold, 4) > conf_threshold的bbox
+            decode_boxes_c = torch.from_numpy(decode_boxes[conf_i_c_mask.cpu().numpy()]) # shape=(n_score_greter_threshold, 4) > conf_threshold的bbox
 
             # convert to numpy, nms
             conf_i_scores = conf_i_scores.unsqueeze(-1) # (n_score_greater_threshold,) => (n_score_greater_threshold, 1)
