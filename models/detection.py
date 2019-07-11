@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 import lib.bbox.bbox_utils as bbox_utils
 import lib.nms.py_cpu_nms as nms
