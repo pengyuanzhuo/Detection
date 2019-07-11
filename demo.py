@@ -71,7 +71,7 @@ def main(args):
                                       conf_threshold=0.5,
                                       nms_threshold=0.2,
                                       topk=args.topk,
-                                      variance=cfg.variance) # shape=(b, num_classes, topk, 5)
+                                      variance=cfg.variances) # shape=(b, num_classes, topk, 5)
 
         scale = torch.Tensor([image.shape[1::-1]]).repeat(1, 2).squeeze() # [w, h, w, h]
         for i in range(outputs.size(1)):
