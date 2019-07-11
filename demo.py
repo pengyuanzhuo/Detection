@@ -2,6 +2,7 @@
 
 import argparse
 import torch
+import torch.nn.functional as F
 import numpy as np
 import cv2
 import matplotlib
@@ -61,8 +62,10 @@ def main(args):
 
     with torch.no_grad():
         model = ssd.build_model(args.model, device)
+        inputs = inputs.to(device)
 
         default_box, loc, conf = model(inputs)
+        conf = F.softmax(conf, dim=-1)
         outputs = detection.detection(default_box, conf, loc,
                                       conf_threshold=0.5,
                                       nms_threshold=0.2,
@@ -81,7 +84,7 @@ def main(args):
                               (int(bbox[0]), int(bbox[1])),
                               (int(bbox[2]), int(bbox[3])),
                               COLORS[i % 3], 2)
-                cv2.putText(image, CLASSES[i], (int(bbox[0]), int(bbox[1])),
+                cv2.putText(image, CLASSES[label], (int(bbox[0]), int(bbox[1])),
                             FONT, 2, (255, 255, 255), 2, cv2.LINE_AA)
                 j += 1
 
