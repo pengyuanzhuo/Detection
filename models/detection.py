@@ -40,7 +40,7 @@ def detection(default_box, conf, loc, conf_threshold=0.8, nms_threshold=0.2, top
 
             # convert to numpy, nms
             conf_i_scores = conf_i_scores.unsqueeze(-1) # (n_score_greater_threshold,) => (n_score_greater_threshold, 1)
-            bbox_c = torch.cat((decode_boxes_c, conf_i_scores), 1) # vstack of [x1, y1, x2, y2, score]
+            bbox_c = torch.cat((decode_boxes_c, conf_i_scores.cpu()), 1) # vstack of [x1, y1, x2, y2, score]
             keep = nms.py_cpu_nms(bbox_c.numpy(), nms_threshold) # python list
             bbox_c = bbox_c[keep] # shape=(n_bbox_nms, 5)
             num_bbox_c = bbox_c.size(0)
