@@ -60,8 +60,9 @@ def main(args):
     image = cv2.imread(args.img)
     inputs = preprocess(image) # (1, c, h, w)
 
+    model = build_model(args.model, device)
+
     with torch.no_grad():
-        model = ssd.build_model(args.model, device)
         inputs = inputs.to(device)
 
         default_box, loc, conf = model(inputs)
